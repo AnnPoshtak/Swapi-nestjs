@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SeedModule } from './seed/seed.module';
 import { FilmModule } from './film/film.module';
+import { StarshipModule } from './starship/starship.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 
 import { LoggerMiddleware } from './logger.middleware';
 import { PeopleModule } from './people/people.module';
@@ -36,6 +38,8 @@ import { SpeciesModule } from './species/species.module';
     PeopleModule,
     PlanetsModule,
     SpeciesModule,
+    StarshipModule,
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
