@@ -38,7 +38,8 @@ export class SeedService {
       await repo.query(`TRUNCATE TABLE "${tableName}" CASCADE;`);
     }
 
-    const [filmsData, peopleData, planetsData, speciesData, starshipsData, vehiclesData] = await Promise.all([this.load('https://swapi.info/api/films'),this.load('https://swapi.info/api/people'),this.load('https://swapi.info/api/planets'),this.load('https://swapi.info/api/species'),this.load('https://swapi.info/api/starships'),this.load('https://swapi.info/api/vehicles'),]);
+    const apiUrl = process.env.SWAPI_URL;
+    const [filmsData, peopleData, planetsData, speciesData, starshipsData, vehiclesData] = await Promise.all([this.load(`${apiUrl}films`),this.load(`${apiUrl}people`),this.load(`${apiUrl}planets`),this.load(`${apiUrl}species`),this.load(`${apiUrl}starships`),this.load(`${apiUrl}vehicles`),]);
 
     //planets
     const planets = planetsData.map((p: any) => ({...p,id: extractId(p.url),}));

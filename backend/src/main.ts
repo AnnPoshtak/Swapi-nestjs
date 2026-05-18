@@ -9,7 +9,6 @@ async function bootstrap() {
     .setTitle('SWAPI NestJS API')
     .setDescription('Star Wars API built with NestJS and TypeORM')
     .setVersion('1.0.0')
-    .addTag('seed', 'Film management endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
