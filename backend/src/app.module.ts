@@ -8,6 +8,7 @@ import { FilmModule } from './film/film.module';
 
 import { LoggerMiddleware } from './logger.middleware';
 import { PeopleModule } from './people/people.module';
+import { PlanetsModule } from './planets/planets.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PeopleModule } from './people/people.module';
     SeedModule,
     FilmModule,
     PeopleModule,
+    PlanetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
