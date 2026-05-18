@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { FilmService } from './film.service';
 import { CreateFilmDto } from './dto/create-film.dto';
 import { UpdateFilmDto } from './dto/update-film.dto';
@@ -13,22 +13,24 @@ export class FilmController {
   }
 
   @Get()
-  findAll() {
-    return this.filmService.findAll();
+  findAll(
+    @Query('page') page?: number,
+  ) {
+    return this.filmService.findAll(page, 10);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.filmService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.filmService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFilmDto: UpdateFilmDto) {
-    return this.filmService.update(+id, updateFilmDto);
+  update(@Param('id') id: number, @Body() updateFilmDto: UpdateFilmDto) {
+    return this.filmService.update(id, updateFilmDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.filmService.remove(+id);
+  remove(@Param('id') id: number) {
+    return this.filmService.remove(id);
   }
 }
