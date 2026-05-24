@@ -6,11 +6,13 @@ import {
   UpdateDateColumn, 
   ManyToMany,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  OneToMany
 } from 'typeorm';
 import { Character } from './people';
 import { Film } from './films';
 import { Planet } from './planets';
+import { SpeciesImage } from './species-image';
 
 @Entity('species')
 export class Species {
@@ -62,4 +64,7 @@ export class Species {
 
   @ManyToMany(() => Film, (film) => film.species)
   films: Film[];
+
+  @OneToMany(() => SpeciesImage, (image) => image.species, { cascade: true })
+  images: SpeciesImage[];
 }

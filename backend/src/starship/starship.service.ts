@@ -4,13 +4,19 @@ import { UpdateStarshipDto } from './dto/update-starship.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Starship } from 'src/seed/entities/starship';
+import { StarshipImage } from 'src/seed/entities/starship-image';
 import { Repository } from 'typeorm';
+import { join } from 'path';
+import { promises as fs } from 'fs';
 
 @Injectable()
 export class StarshipService {
-  private starshipRelations = ['pilots', 'films'];
+  private starshipRelations = ['pilots', 'films', 'images'];
+  private readonly uploadPath = join(process.cwd(), 'uploads');
+
   constructor(
     @InjectRepository(Starship) private readonly starshipRepo: Repository<Starship>,
+    @InjectRepository(StarshipImage) private readonly imageRepo: Repository<StarshipImage>,
   ) { }
 
   async create(createStarshipDto: CreateStarshipDto): Promise<Starship> {
@@ -18,11 +24,48 @@ export class StarshipService {
     return await this.starshipRepo.save(newStarship);
   }
 
+  async addImage(starshipId: number, file: Express.Multer.File) {
+    const starship = await this.findOne(starshipId);
+    const newImage = this.imageRepo.create({
+      filename: file.filename,
+      originalName: file.originalname,
+      starship: starship,
+    });
+
+    await this.imageRepo.save(newImage);
+
+    return {
+      id: newImage.id,
+      filename: newImage.filename,
+      url: `/starship/image/${newImage.filename}`
+    };
+  }
+
+  async removeImage(imageId: number) {
+    const image = await this.imageRepo.findOne({ where: { id: imageId } });
+    if (!image) {
+      throw new NotFoundException(`Image with ID ${imageId} not found`);
+    }
+
+    const filePath = join(this.uploadPath, image.filename);
+
+    try {
+      await fs.unlink(filePath);
+    } catch (err) {
+      console.error(`File not found on disk: ${filePath}`);
+    }
+
+    await this.imageRepo.delete(imageId);
+
+    return { deleted: true };
+  }
+
   async findAll(page: number = 1, limit: number = 10): Promise<{ data: Starship[]; total: number }> {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.starshipRepo.findAndCount({
-      loadRelationIds: true,
+      relations: this.starshipRelations,
+      relationLoadStrategy: 'query',
       take: limit,
       skip: skip,
       order: { id: 'ASC' },
@@ -50,7 +93,19 @@ export class StarshipService {
   }
 
   async remove(id: number): Promise<{ deleted: boolean }> {
-    await this.findOne(id);
+    const starship = await this.findOne(id);
+    if (starship.images && starship.images.length > 0) {
+      const deletePromises = starship.images.map(async (image) => {
+        const filePath = join(this.uploadPath, image.filename);
+        try {
+          await fs.unlink(filePath);
+        } catch (err) {
+          console.error(`File not found: ${filePath}`);
+        }
+      });
+      await Promise.all(deletePromises);
+    }
+
     await this.starshipRepo.delete(id);
     return { deleted: true };
   }

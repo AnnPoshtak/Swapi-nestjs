@@ -4,10 +4,12 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToMany
+  ManyToMany,
+  OneToMany
 } from 'typeorm';
 import { Character } from './people';
 import { Film } from './films';
+import { VehicleImage } from './vehicle-image';
 
 @Entity('vehicles')
 export class Vehicle {
@@ -61,4 +63,7 @@ export class Vehicle {
 
   @ManyToMany(() => Film, (film) => film.vehicles)
   films: Film[];
+
+  @OneToMany(() => VehicleImage, (image) => image.vehicle, { cascade: true })
+  images: VehicleImage[];
 }

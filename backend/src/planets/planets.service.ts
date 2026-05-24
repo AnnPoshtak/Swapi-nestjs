@@ -1,17 +1,57 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreatePlanetDto } from './dto/create-planet.dto';
 import { UpdatePlanetDto } from './dto/update-planet.dto';
 import { Planet } from 'src/seed/entities/planets';
+import { PlanetImage } from 'src/seed/entities/planet-image'; 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class PlanetsService {
-  private readonly planetRelations = ['films', 'residents'];
+  private readonly planetRelations = ['films', 'residents', 'images'];
+  private readonly uploadPath = join(process.cwd(), 'uploads');
+
   constructor(
     @InjectRepository(Planet) private readonly planetRepo: Repository<Planet>,
+    @InjectRepository(PlanetImage) private readonly imageRepo: Repository<PlanetImage>,
   ) { }
+
+  async addImage(planetId: number, file: Express.Multer.File) {
+    const planet = await this.findOne(planetId);
+
+    const newImage = this.imageRepo.create({
+      filename: file.filename,
+      originalName: file.originalname,
+      planet: planet,
+    });
+
+    await this.imageRepo.save(newImage);
+
+    return {
+      id: newImage.id,
+      filename: newImage.filename,
+      url: `/planets/image/${newImage.filename}`
+    };
+  }
+
+  async removeImage(imageId: number) {
+    const image = await this.imageRepo.findOne({ where: { id: imageId } });
+    if (!image) {
+      throw new NotFoundException(`with ID ${imageId} not found`);
+    }
+
+    const filePath = join(this.uploadPath, image.filename);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    await this.imageRepo.delete(imageId);
+
+    return { deleted: true };
+  }
 
   async create(createPlanetDto: CreatePlanetDto): Promise<Planet> {
     const newPlanet = this.planetRepo.create(createPlanetDto);
@@ -22,8 +62,8 @@ export class PlanetsService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.planetRepo.findAndCount({
-      // relations: this.PlanetRelations, //so far yes, because it puts the entire server
-      loadRelationIds: true,
+      relations: this.planetRelations,
+      relationLoadStrategy: 'query',
       take: limit,
       skip: skip,
       order: { id: 'ASC' },
@@ -51,7 +91,17 @@ export class PlanetsService {
   }
 
   async remove(id: number): Promise<{ deleted: boolean }> {
-    await this.findOne(id);
+    const planet = await this.findOne(id);
+
+    if (planet.images && planet.images.length > 0) {
+      for (const image of planet.images) {
+        const filePath = join(this.uploadPath, image.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    }
+
     await this.planetRepo.delete(id);
     return { deleted: true };
   }

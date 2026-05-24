@@ -11,6 +11,7 @@ import { Vehicle } from './entities/vehicles';
 
 import { extractId } from './utils/helper';
 
+
 @Injectable()
 export class SeedService {
   constructor(

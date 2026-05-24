@@ -1,26 +1,28 @@
-import { 
-  Entity, 
-  PrimaryColumn, 
-  Column, 
-  CreateDateColumn, 
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  ManyToOne,
   JoinColumn,
-  JoinTable
+  JoinTable,
+  OneToMany,
+  ManyToOne
 } from 'typeorm';
 import { Film } from './films';
 import { Vehicle } from './vehicles';
 import { Starship } from './starship';
 import { Species } from './species';
-import { Planet } from './planets'; 
+import { Planet } from './planets';
+import { PeopleImage } from './people-image';
 
 @Entity('characters')
 export class Character {
   @PrimaryColumn()
   id: number;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   name: string;
 
   @Column({ nullable: true })
@@ -44,7 +46,7 @@ export class Character {
   @Column({ nullable: true })
   gender?: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   url: string;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -60,7 +62,7 @@ export class Character {
   @ManyToMany(() => Film, (film) => film.characters)
   films: Film[];
 
-  @ManyToMany(() => Vehicle, (vehicle) => vehicle.pilots) 
+  @ManyToMany(() => Vehicle, (vehicle) => vehicle.pilots)
   @JoinTable({ name: 'characters_vehicles' })
   vehicles: Vehicle[];
 
@@ -71,4 +73,7 @@ export class Character {
   @ManyToMany(() => Species, (species) => species.people)
   @JoinTable({ name: 'characters_species' })
   species: Species[];
+
+  @OneToMany(() => PeopleImage, (characterImage) => characterImage.character)
+  images: PeopleImage[];
 }

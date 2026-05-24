@@ -5,13 +5,15 @@ import {
   CreateDateColumn, 
   UpdateDateColumn,
   ManyToMany,
-  JoinTable
+  JoinTable,
+  OneToMany
 } from 'typeorm';
 import { Character } from './people';
 import { Planet } from './planets';
 import { Starship } from './starship';
 import { Vehicle } from './vehicles';
 import { Species } from './species';
+import { FilmImage } from './film-image';
 
 @Entity('films')
 export class Film {
@@ -64,4 +66,7 @@ export class Film {
   @ManyToMany(() => Species, (species) => species.films)
   @JoinTable({ name: 'films_species' })
   species: Species[];
+
+  @OneToMany(() => FilmImage, (image) => image.film, { cascade: true })
+  images: FilmImage[];
 }
