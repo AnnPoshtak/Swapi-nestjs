@@ -1,9 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class InitDB1779628818676 implements MigrationInterface {
-    name = 'InitDB1779628818676'
+export class InitDB1779715416790 implements MigrationInterface {
+    name = 'InitDB1779715416790'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "users" ("id" SERIAL NOT NULL, "email" character varying NOT NULL, "password" character varying NOT NULL, "role" character varying NOT NULL, CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "planet_images" ("id" SERIAL NOT NULL, "filename" character varying NOT NULL, "original-name" character varying NOT NULL, "planetId" integer, CONSTRAINT "PK_2da35f1a91cd6a817b8bee36ec9" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "planets" ("id" integer NOT NULL, "name" character varying, "rotation_period" character varying, "orbital_period" character varying, "diameter" character varying, "climate" character varying, "gravity" character varying, "terrain" character varying, "surface_water" character varying, "population" character varying, "url" character varying, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "edited_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_d5fbc2513a6d4909fe31938b0fd" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "starship_images" ("id" SERIAL NOT NULL, "filename" character varying NOT NULL, "original-name" character varying NOT NULL, "starshipId" integer, CONSTRAINT "PK_e3004f5ef8d26cf1dec69e6cafe" PRIMARY KEY ("id"))`);
@@ -127,6 +128,7 @@ export class InitDB1779628818676 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "starship_images"`);
         await queryRunner.query(`DROP TABLE "planets"`);
         await queryRunner.query(`DROP TABLE "planet_images"`);
+        await queryRunner.query(`DROP TABLE "users"`);
     }
 
 }

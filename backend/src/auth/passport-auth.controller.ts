@@ -1,16 +1,22 @@
-import { Controller, Get, Post, UseGuards, Request } from "@nestjs/common";
+import { Controller, Get, Post, UseGuards, Request, Body } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { PassportLocalGuard } from "./guards/passport-local.guard";
 import { PassportJwtAuthGuard } from "./guards/passport-jwt.guard";
+import { CreateAuthDto } from "./dto/create-auth.dto";
 
-@Controller('auth-v2')
+@Controller('auth')
 export class PassportAuthController {
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService) { }
+
+    @Post('register')
+    async register(@Body() input: CreateAuthDto) {
+        return this.authService.register(input.email, input.password);
+    }
 
     @Post('login')
     @UseGuards(PassportLocalGuard)
-    login(@Request() request: any){
-        return this.authService.signIn(request.user); 
+    login(@Request() request: any, @Body() createAuth: CreateAuthDto) {
+        return this.authService.signIn(request.user);
     }
 
     @Get("profile")
