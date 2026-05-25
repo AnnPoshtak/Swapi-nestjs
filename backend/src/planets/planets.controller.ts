@@ -1,6 +1,7 @@
 import { 
   Controller, Get, Post, Body, Patch, Param, Delete, Query,
-  UseInterceptors, UploadedFile, Res, BadRequestException 
+  UseInterceptors, UploadedFile, Res, BadRequestException, 
+  UseGuards
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
@@ -9,12 +10,16 @@ import { extname } from 'path';
 import { PlanetsService } from './planets.service';
 import { CreatePlanetDto } from './dto/create-planet.dto';
 import { UpdatePlanetDto } from './dto/update-planet.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('planets')
 @Controller('planets')
+@UseGuards(RolesGuard)
 export class PlanetsController {
   constructor(private readonly planetsService: PlanetsService) { }
 
+  @Roles("admin")
   @Post(':id/image')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -61,11 +66,13 @@ export class PlanetsController {
     return this.planetsService.addImage(id, file);
   }
 
+  @Roles("admin")
   @Delete('image/:imageId')
   removeImage(@Param('imageId') imageId: number) {
     return this.planetsService.removeImage(imageId);
   }
 
+  @Roles("admin")
   @Post()
   create(@Body() createPlanetDto: CreatePlanetDto) {
     return this.planetsService.create(createPlanetDto);
@@ -81,11 +88,13 @@ export class PlanetsController {
     return this.planetsService.findOne(id);
   }
 
+  @Roles("admin")
   @Patch(':id')
   update(@Param('id') id: number, @Body() updatePlanetDto: UpdatePlanetDto) {
     return this.planetsService.update(id, updatePlanetDto);
   }
 
+  @Roles("admin")
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.planetsService.remove(id);

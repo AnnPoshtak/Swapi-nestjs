@@ -1,6 +1,7 @@
 import { 
   Controller, Get, Post, Body, Patch, Param, Delete, Query,
-  UseInterceptors, UploadedFile, BadRequestException 
+  UseInterceptors, UploadedFile, BadRequestException, 
+  UseGuards
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
@@ -9,12 +10,16 @@ import { extname } from 'path';
 import { SpeciesService } from './species.service';
 import { CreateSpeciesDto } from './dto/create-species.dto';
 import { UpdateSpeciesDto } from './dto/update-species.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('species')
 @Controller('species')
+@UseGuards(RolesGuard)
 export class SpeciesController {
   constructor(private readonly speciesService: SpeciesService) { }
 
+  @Roles("admin")
   @Post(':id/image')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -61,12 +66,14 @@ export class SpeciesController {
     return this.speciesService.addImage(id, file);
   }
 
+  @Roles("admin")
   @Delete('image/:imageId')
   removeImage(@Param('imageId') imageId: number) {
     return this.speciesService.removeImage(imageId);
   }
 
-  @Post()  create(@Body() createSpeciesDto: CreateSpeciesDto) {
+  @Roles("admin")
+  @Post() create(@Body() createSpeciesDto: CreateSpeciesDto) {
     return this.speciesService.create(createSpeciesDto);
   }
 
@@ -82,11 +89,13 @@ export class SpeciesController {
     return this.speciesService.findOne(id);
   }
 
+  @Roles("admin")
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateSpeciesDto: UpdateSpeciesDto) {
     return this.speciesService.update(id, updateSpeciesDto);
   }
 
+  @Roles("admin")
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.speciesService.remove(id);

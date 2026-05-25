@@ -1,6 +1,7 @@
 import { 
   Controller, Get, Post, Body, Patch, Param, Delete, Query,
-  UseInterceptors, UploadedFile, BadRequestException 
+  UseInterceptors, UploadedFile, BadRequestException, 
+  UseGuards
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
@@ -9,12 +10,16 @@ import { extname } from 'path';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('vehicles')
 @Controller('vehicles')
+@UseGuards(RolesGuard)
 export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) { }
 
+  @Roles("admin")
   @Post(':id/image')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -61,11 +66,13 @@ export class VehiclesController {
     return this.vehiclesService.addImage(id, file);
   }
 
+  @Roles("admin")
   @Delete('image/:imageId')
   removeImage(@Param('imageId') imageId: number) {
     return this.vehiclesService.removeImage(imageId);
   }
 
+  @Roles("admin")
   @Post()  create(@Body() createVehicleDto: CreateVehicleDto) {
     return this.vehiclesService.create(createVehicleDto);
   }
@@ -82,11 +89,13 @@ export class VehiclesController {
     return this.vehiclesService.findOne(id);
   }
 
+  @Roles("admin")
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateVehicleDto: UpdateVehicleDto) {
     return this.vehiclesService.update(id, updateVehicleDto);
   }
 
+  @Roles("admin")
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.vehiclesService.remove(id);

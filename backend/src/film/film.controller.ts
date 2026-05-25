@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, BadRequestException} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, BadRequestException, UseGuards} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
@@ -6,11 +6,15 @@ import { extname } from 'path';
 import { FilmService } from './film.service';
 import { CreateFilmDto } from './dto/create-film.dto';
 import { UpdateFilmDto } from './dto/update-film.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('film')
+@UseGuards(RolesGuard)
 export class FilmController {
   constructor(private readonly filmService: FilmService) {}
 
+  @Roles('admin')
   @Post(':id/image')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -57,11 +61,13 @@ export class FilmController {
     return this.filmService.addImage(id, file);
   }
 
+  @Roles('admin')
   @Delete('image/:imageId')
   removeImage(@Param('imageId') imageId: number) {
     return this.filmService.removeImage(imageId);
   }
 
+  @Roles('admin')
   @Post()  create(@Body() createFilmDto: CreateFilmDto) {
     return this.filmService.create(createFilmDto);
   }
@@ -78,11 +84,13 @@ export class FilmController {
     return this.filmService.findOne(id);
   }
 
+  @Roles('admin')
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateFilmDto: UpdateFilmDto) {
     return this.filmService.update(id, updateFilmDto);
   }
 
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.filmService.remove(id);
