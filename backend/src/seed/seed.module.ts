@@ -9,6 +9,7 @@ import { Planet } from './entities/planets';
 import { Species } from './entities/species';
 import { Starship } from './entities/starship';
 import { Vehicle } from './entities/vehicles';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Vehicle } from './entities/vehicles';
       Species,
       Starship,
       Vehicle,
+      User
     ]),
   ],
   controllers: [SeedController],

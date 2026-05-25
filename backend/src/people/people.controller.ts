@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, BadRequestException, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, BadRequestException, UploadedFile, UseGuards } from '@nestjs/common';
 import { PeopleService } from './people.service';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
@@ -6,11 +6,15 @@ import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('people')
+@UseGuards(RolesGuard)
 export class PeopleController {
   constructor(private readonly peopleService: PeopleService) { }
 
+  @Roles("admin")
   @Post(':id/image')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -57,11 +61,13 @@ export class PeopleController {
     return this.peopleService.addImage(id, file);
   }
 
+  @Roles("admin")
   @Delete('image/:imageId')
   removeImage(@Param('imageId') imageId: number) {
     return this.peopleService.removeImage(imageId);
   }
 
+  @Roles("admin")
   @Post()
   create(@Body() createPersonDto: CreatePersonDto) {
     return this.peopleService.create(createPersonDto);
@@ -79,11 +85,13 @@ export class PeopleController {
     return this.peopleService.findOne(id);
   }
 
+  @Roles("admin")
   @Patch(':id')
   update(@Param('id') id: number, @Body() updatePersonDto: UpdatePersonDto) {
     return this.peopleService.update(id, updatePersonDto);
   }
 
+  @Roles("admin")
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.peopleService.remove(id);

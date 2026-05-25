@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { Film } from './entities/films';
 import { Character } from './entities/people';
@@ -10,6 +11,7 @@ import { Starship } from './entities/starship';
 import { Vehicle } from './entities/vehicles';
 
 import { extractId } from './utils/helper';
+import { User } from 'src/users/entities/user.entity';
 
 
 @Injectable()
@@ -21,6 +23,7 @@ export class SeedService {
     @InjectRepository(Species) private readonly speciesRepo: Repository<Species>,
     @InjectRepository(Starship) private readonly starshipRepo: Repository<Starship>,
     @InjectRepository(Vehicle) private readonly vehicleRepo: Repository<Vehicle>,
+    @InjectRepository(User) private readonly userRepo: Repository<User>
   ) { }
 
 
@@ -40,31 +43,52 @@ export class SeedService {
     }
 
     const apiUrl = process.env.SWAPI_URL;
-    const [filmsData, peopleData, planetsData, speciesData, starshipsData, vehiclesData] = await Promise.all([this.load(`${apiUrl}films`),this.load(`${apiUrl}people`),this.load(`${apiUrl}planets`),this.load(`${apiUrl}species`),this.load(`${apiUrl}starships`),this.load(`${apiUrl}vehicles`),]);
+    const [filmsData, peopleData, planetsData, speciesData, starshipsData, vehiclesData] = await Promise.all([this.load(`${apiUrl}films`), this.load(`${apiUrl}people`), this.load(`${apiUrl}planets`), this.load(`${apiUrl}species`), this.load(`${apiUrl}starships`), this.load(`${apiUrl}vehicles`),]);
 
     //planets
-    const planets = planetsData.map((p: any) => ({...p,id: extractId(p.url),}));
+    const planets = planetsData.map((p: any) => ({ ...p, id: extractId(p.url), }));
     await this.planetRepo.save(this.planetRepo.create(planets));
 
     //starships
-    const starships = starshipsData.map((s: any) => ({...s,id: extractId(s.url),}));
+    const starships = starshipsData.map((s: any) => ({ ...s, id: extractId(s.url), }));
     await this.starshipRepo.save(this.starshipRepo.create(starships));
 
     //vehicles
-    const vehicles = vehiclesData.map((v: any) => ({...v,id: extractId(v.url),}));
+    const vehicles = vehiclesData.map((v: any) => ({ ...v, id: extractId(v.url), }));
     await this.vehicleRepo.save(this.vehicleRepo.create(vehicles));
 
     //ізусшуі
-    const species = speciesData.map((s: any) => ({...s,id: extractId(s.url),homeworld: s.homeworld ? { id: extractId(s.homeworld) } : null,}));
+    const species = speciesData.map((s: any) => ({ ...s, id: extractId(s.url), homeworld: s.homeworld ? { id: extractId(s.homeworld) } : null, }));
     await this.speciesRepo.save(this.speciesRepo.create(species));
 
     //chapters
-    const characters = peopleData.map((c: any) => ({...c,id: extractId(c.url),homeworld: c.homeworld ? { id: extractId(c.homeworld) } : null,vehicles: (c.vehicles || []).map((url: string) => ({ id: extractId(url) })),starships: (c.starships || []).map((url: string) => ({ id: extractId(url) })),species: (c.species || []).map((url: string) => ({ id: extractId(url) })),}));
+    const characters = peopleData.map((c: any) => ({ ...c, id: extractId(c.url), homeworld: c.homeworld ? { id: extractId(c.homeworld) } : null, vehicles: (c.vehicles || []).map((url: string) => ({ id: extractId(url) })), starships: (c.starships || []).map((url: string) => ({ id: extractId(url) })), species: (c.species || []).map((url: string) => ({ id: extractId(url) })), }));
     await this.characterRepo.save(this.characterRepo.create(characters));
 
     //films
-    const films = filmsData.map((f: any) => ({...f,id: extractId(f.url),characters: (f.characters || []).map((url: string) => ({ id: extractId(url) })),planets: (f.planets || []).map((url: string) => ({ id: extractId(url) })),starships: (f.starships || []).map((url: string) => ({ id: extractId(url) })),vehicles: (f.vehicles || []).map((url: string) => ({ id: extractId(url) })),species: (f.species || []).map((url: string) => ({ id: extractId(url) })),}));
+    const films = filmsData.map((f: any) => ({ ...f, id: extractId(f.url), characters: (f.characters || []).map((url: string) => ({ id: extractId(url) })), planets: (f.planets || []).map((url: string) => ({ id: extractId(url) })), starships: (f.starships || []).map((url: string) => ({ id: extractId(url) })), vehicles: (f.vehicles || []).map((url: string) => ({ id: extractId(url) })), species: (f.species || []).map((url: string) => ({ id: extractId(url) })), }));
     await this.filmRepo.save(this.filmRepo.create(films));
+
+    //roles
+    const adminEmailsString = process.env.ADMIN_EMAILS;
+
+    if (adminEmailsString) {
+      const adminArray = adminEmailsString.split(',').map(email => email.trim());
+
+      for (const email of adminArray) {
+        if (!email) continue;
+
+        const user = await this.userRepo.findOne({ where: { email } });
+
+        if (!user) {
+          console.error(`User with email ${email} not found`)
+          throw new Error(`User with email ${email} not found`)
+        } else if (user.role !== 'admin') {
+          user.role = 'admin';
+          await this.userRepo.save(user);
+        }
+      }
+    }
 
     return {
       status: 'success',

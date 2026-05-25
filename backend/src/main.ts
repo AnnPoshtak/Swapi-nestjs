@@ -1,30 +1,58 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { PassportJwtAuthGuard } from './auth/guards/passport-jwt.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
 
-  const config = new DocumentBuilder()
-    .setTitle('SWAPI NestJS API')
-    .setDescription('Star Wars API built with NestJS and TypeORM')
-    .setVersion('1.0.0')
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  await app.listen(process.env.PORT ?? 3000);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
     }),
   );
-  console.log(`Server running on http://localhost:${process.env.PORT ?? 3000}`);
-  console.log(`API documentation: http://localhost:${process.env.PORT ?? 3000}/api/docs`);
+
+  const config = new DocumentBuilder()
+    .setTitle('SWAPI NestJS API')
+    .setDescription('Star Wars API built with NestJS and TypeORM')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Введіть JWT токен',
+        in: 'header',
+      },
+      'bearer-auth', 
+    )
+    .addSecurityRequirements('bearer-auth')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  Object.values(document.paths).forEach((path: any) => {
+    Object.values(path).forEach((operation: any) => {
+      if (operation.security && operation['x-public']) {
+        operation.security = []; 
+      }
+    });
+  });
+
+  SwaggerModule.setup('api/docs', app, document);
+
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new PassportJwtAuthGuard(reflector));
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  
+  console.log(`Server running on http://localhost:${port}`);
+  console.log(`API documentation: http://localhost:${port}/api/docs`);
 }
 bootstrap();
