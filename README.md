@@ -24,7 +24,7 @@ Before running the application, you need to set up your environment variables.
 
 ## Database Configuration
 
-Once the environment is set up, you can move on to configuring the database. While **PostgreSQL** is highly recommended for production and full feature compatibility
+Once the environment is set up, you can move on to configuring the database. **PostgreSQL** is highly recommended for this project to ensure full feature compatibility.
 
 ### Option 1: PostgreSQL (Recommended)
 Ensure your PostgreSQL server is running and you have created a database instance. Update your `.env` file with your credentials:
@@ -41,6 +41,7 @@ DB_NAME=swapi
 After configuring the credentials, run the migrations to create the necessary tables for Star Wars entities and users:
 ```
 cd backend
+npm install
 npm run migration:run
 ```
 
@@ -48,7 +49,7 @@ npm run migration:run
 
 1. Configure Admins: Add the required emails to ADMIN_EMAILS in your .env file (comma-separated, no spaces).
 
-2. Start the app: Run npm run start:dev (or start Docker containers).
+2. Start the app: go to `backend` folder, install all packages ```npm install``` and Run ```npm run start:dev```
 
 3. Register Users: Open http://localhost:3000/api, go to the Auth section, and register the accounts for all emails you specified in ADMIN_EMAILS.
 
@@ -78,8 +79,8 @@ To make the NestJS container communicate with the PostgreSQL container, change D
    ```
 2. Launch the Containers
 
-   Run the following command in the root directory to build and start the application and database in the background:
-      ```docker-compose up -d --build```
+   Run the following command in the root directory to build and start the application and database in the background (Migrations will run automatically on container startup):
+      ```docker compose up -d --build```
 
 3. Initialize Data (/seed)
 Once the containers are up and migrations are applied, follow the same initialization steps as for the local setup:
@@ -87,11 +88,10 @@ Once the containers are up and migrations are applied, follow the same initializ
     2. Register and Log in.
     3. Call the /seed route to populate your database with Star Wars data and automatically grants Admin permissions
 
-Migrations will run automatically on container startup
 
 # Useful Docker Commands
-- View Logs: `docker-compose logs -f` (or `docker-compose logs -f backend` for app logs only).
+- View Logs: `docker compose logs -f` (or `docker compose logs -f backend` for app logs only).
 
-- Stop Containers: `docker-compose down`
+- Stop Containers: `docker compose down`
 
-- Stop and Wipe Data: `docker-compose down -v` (removes the database volume, allowing a completely fresh start).
+- Stop and Wipe Data: `docker compose down -v` (removes the database volume, allowing a completely fresh start).
