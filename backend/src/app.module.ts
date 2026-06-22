@@ -1,6 +1,9 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SeedModule } from './seed/seed.module';
@@ -27,6 +30,12 @@ import { AuthModule } from './auth/auth.module';
       ...dataSourceOptions, 
       autoLoadEntities: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 15,  
+      },
+    ]),
     UsersModule,
     AuthModule,
     SeedModule,
@@ -38,7 +47,13 @@ import { AuthModule } from './auth/auth.module';
     VehiclesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    AppService
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
