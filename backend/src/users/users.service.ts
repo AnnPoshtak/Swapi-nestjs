@@ -18,7 +18,7 @@ export class UsersService {
   async createUser(email: string, pass: string): Promise<User> {
     const existingUser = await this.findUserByEmail(email);
     if (existingUser) {
-      throw new BadRequestException('User with this email is already exist');
+      throw new BadRequestException('Registration failed. Check your data and try again');
     }
 
     const salt = await bcrypt.genSalt(10);
