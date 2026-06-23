@@ -18,6 +18,16 @@ export class FilmService {
     @InjectRepository(FilmImage) private readonly imageRepo: Repository<FilmImage>,
   ) {}
 
+  private addImagePaths(film: Film): Film {
+    if (film.images && film.images.length > 0) {
+      film.images = film.images.map(image => ({
+        ...image,
+        url: `/images/${image.filename}`
+      })) as FilmImage[];
+    }
+    return film;
+  }
+
   async create(createFilmDto: CreateFilmDto): Promise<Film> {
     const newFilm = this.filmRepo.create(createFilmDto); 
     return await this.filmRepo.save(newFilm);
@@ -36,7 +46,7 @@ export class FilmService {
     return {
       id: newImage.id,
       filename: newImage.filename,
-      url: `/film/image/${newImage.filename}`
+      url: `/images/${newImage.filename}`
     };
   }
 
@@ -70,7 +80,8 @@ export class FilmService {
       order: { id: 'ASC' },
     });
 
-    return { data, total };
+    const transformedData = data.map(film => this.addImagePaths(film));
+    return { data: transformedData, total };
   }
 
   async findOne(id: number): Promise<Film> {
@@ -82,7 +93,7 @@ export class FilmService {
     if (!film) {
       throw new NotFoundException(`Film with ID ${id} not found`);
     }
-    return film;
+    return this.addImagePaths(film);
   }
 
   async update(id: number, updateFilmDto: UpdateFilmDto): Promise<Film> {

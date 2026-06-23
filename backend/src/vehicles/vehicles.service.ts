@@ -19,6 +19,16 @@ export class VehiclesService {
     @InjectRepository(VehicleImage) private readonly imageRepo: Repository<VehicleImage>,
   ) { }
 
+  private addImagePaths(vehicle: Vehicle): Vehicle {
+    if (vehicle.images && vehicle.images.length > 0) {
+      vehicle.images = vehicle.images.map(image => ({
+        ...image,
+        url: `/images/${image.filename}`
+      })) as VehicleImage[];
+    }
+    return vehicle;
+  }
+
   async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
     const newVehicle = this.vehicleRepo.create(createVehicleDto);
     return await this.vehicleRepo.save(newVehicle);
@@ -37,7 +47,7 @@ export class VehiclesService {
     return {
       id: newImage.id,
       filename: newImage.filename,
-      url: `/vehicles/image/${newImage.filename}`
+      url: `/images/${newImage.filename}`
     };
   }
 
@@ -71,7 +81,8 @@ export class VehiclesService {
       order: { id: 'ASC' },
     });
 
-    return { data, total };
+    const transformedData = data.map(vehicle => this.addImagePaths(vehicle));
+    return { data: transformedData, total };
   }
 
   async findOne(id: number): Promise<Vehicle> {
@@ -83,7 +94,7 @@ export class VehiclesService {
     if (!vehicle) {
       throw new NotFoundException(`Vehicle with ID ${id} not found`);
     }
-    return vehicle;
+    return this.addImagePaths(vehicle);
   }
 
   async update(id: number, updateVehicleDto: UpdateVehicleDto): Promise<Vehicle> {

@@ -18,6 +18,16 @@ export class PlanetsService {
     @InjectRepository(PlanetImage) private readonly imageRepo: Repository<PlanetImage>,
   ) { }
 
+  private addImagePaths(planet: Planet): Planet {
+    if (planet.images && planet.images.length > 0) {
+      planet.images = planet.images.map(image => ({
+        ...image,
+        url: `/images/${image.filename}`
+      })) as PlanetImage[];
+    }
+    return planet;
+  }
+
   async addImage(planetId: number, file: Express.Multer.File) {
     const planet = await this.findOne(planetId);
 
@@ -32,7 +42,7 @@ export class PlanetsService {
     return {
       id: newImage.id,
       filename: newImage.filename,
-      url: `/planets/image/${newImage.filename}`
+      url: `/images/${newImage.filename}`
     };
   }
 
@@ -69,7 +79,8 @@ export class PlanetsService {
       order: { id: 'ASC' },
     });
 
-    return { data, total };
+    const transformedData = data.map(planet => this.addImagePaths(planet));
+    return { data: transformedData, total };
   }
 
   async findOne(id: number): Promise<Planet> {
@@ -80,7 +91,7 @@ export class PlanetsService {
 
     if (!planet) {
       throw new NotFoundException(`Planet with ID ${id} not found`);
-    }
+    }this.addImagePaths(planet)
     return planet;
   }
 

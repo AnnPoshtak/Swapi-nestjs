@@ -18,6 +18,16 @@ export class PeopleService {
     @InjectRepository(PeopleImage) private readonly imageRepo: Repository<PeopleImage>
   ) { }
 
+  private addImagePaths(character: Character): Character {
+    if (character.images && character.images.length > 0) {
+      character.images = character.images.map(image => ({
+        ...image,
+        url: `/images/${image.filename}`
+      })) as PeopleImage[];
+    }
+    return character;
+  }
+
   async addImage(personId: number, file: Express.Multer.File) {
     const character = await this.findOne(personId);
     const newImage = this.imageRepo.create({
@@ -31,7 +41,7 @@ export class PeopleService {
     return {
       id: newImage.id,
       filename: newImage.filename,
-      url: `/people/image/${newImage.filename}`
+      url: `/images/${newImage.filename}`
     };
   }
 
@@ -70,7 +80,8 @@ export class PeopleService {
       order: { id: 'ASC' },
     });
 
-    return { data, total };
+    const transformedData = data.map(character => this.addImagePaths(character));
+    return { data: transformedData, total };
   }
 
   async findOne(id: number): Promise<Character> {
@@ -82,7 +93,7 @@ export class PeopleService {
     if (!character) {
       throw new NotFoundException(`Character with ID ${id} not found`);
     }
-    return character;
+    return this.addImagePaths(character);
   }
 
   async update(id: number, updatePersonDto: UpdatePersonDto): Promise<Character> {

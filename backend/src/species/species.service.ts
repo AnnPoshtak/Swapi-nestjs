@@ -19,6 +19,16 @@ export class SpeciesService {
     @InjectRepository(SpeciesImage) private readonly imageRepo: Repository<SpeciesImage>,
   ) { }
 
+  private addImagePaths(species: Species): Species {
+    if (species.images && species.images.length > 0) {
+      species.images = species.images.map(image => ({
+        ...image,
+        url: `/images/${image.filename}`
+      })) as SpeciesImage[];
+    }
+    return species;
+  }
+
   async create(createSpeciesDto: CreateSpeciesDto): Promise<Species> {
     const newSpecies = this.speciesRepo.create(createSpeciesDto);
     return await this.speciesRepo.save(newSpecies);
@@ -37,7 +47,7 @@ export class SpeciesService {
     return {
       id: newImage.id,
       filename: newImage.filename,
-      url: `/species/image/${newImage.filename}`
+      url: `/images/${newImage.filename}`
     };
   }
 
@@ -71,7 +81,8 @@ export class SpeciesService {
       order: { id: 'ASC' },
     });
 
-    return { data, total };
+    const transformedData = data.map(specie => this.addImagePaths(specie));
+    return { data: transformedData, total };
   }
 
   async findOne(id: number): Promise<Species> {
@@ -83,7 +94,7 @@ export class SpeciesService {
     if (!specie) {
       throw new NotFoundException(`Specie with ID ${id} not found`);
     }
-    return specie;
+    return this.addImagePaths(specie);
   }
 
   async update(id: number, updateSpeciesDto: UpdateSpeciesDto): Promise<Species> {

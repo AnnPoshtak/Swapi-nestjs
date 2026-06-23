@@ -19,6 +19,16 @@ export class StarshipService {
     @InjectRepository(StarshipImage) private readonly imageRepo: Repository<StarshipImage>,
   ) { }
 
+  private addImagePaths(starship: Starship): Starship {
+    if (starship.images && starship.images.length > 0) {
+      starship.images = starship.images.map(image => ({
+        ...image,
+        url: `/images/${image.filename}`
+      })) as StarshipImage[];
+    }
+    return starship;
+  }
+
   async create(createStarshipDto: CreateStarshipDto): Promise<Starship> {
     const newStarship = this.starshipRepo.create(createStarshipDto);
     return await this.starshipRepo.save(newStarship);
@@ -37,7 +47,7 @@ export class StarshipService {
     return {
       id: newImage.id,
       filename: newImage.filename,
-      url: `/starship/image/${newImage.filename}`
+      url: `/images/${newImage.filename}`
     };
   }
 
@@ -71,7 +81,8 @@ export class StarshipService {
       order: { id: 'ASC' },
     });
 
-    return { data, total };
+    const transformedData = data.map(starship => this.addImagePaths(starship));
+    return { data: transformedData, total };
   }
 
   async findOne(id: number): Promise<Starship> {
@@ -83,7 +94,7 @@ export class StarshipService {
     if (!starship) {
       throw new NotFoundException(`Starship with ID ${id} not found`);
     }
-    return starship;
+    return this.addImagePaths(starship);
   }
 
   async update(id: number, updateStarshipDto: UpdateStarshipDto): Promise<Starship> {
