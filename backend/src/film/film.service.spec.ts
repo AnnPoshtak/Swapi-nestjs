@@ -122,7 +122,7 @@ describe('FilmService', () => {
       expect(result).toEqual({
         id: 5,
         filename: 'cover.jpg',
-        url: '/film/image/cover.jpg',
+        url: '/images/cover.jpg',
       });
     });
   });

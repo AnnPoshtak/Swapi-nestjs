@@ -120,7 +120,7 @@ describe('PlanetsService', () => {
       expect(result).toEqual({
         id: 5,
         filename: 'tatooine.jpg',
-        url: '/planets/image/tatooine.jpg',
+        url: '/images/tatooine.jpg',
       });
     });
   });

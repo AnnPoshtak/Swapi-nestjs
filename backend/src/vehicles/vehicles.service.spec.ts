@@ -122,7 +122,7 @@ describe('VehiclesService', () => {
       expect(result).toEqual({
         id: 5,
         filename: 'falcon.jpg',
-        url: '/vehicles/image/falcon.jpg',
+        url: '/images/falcon.jpg',
       });
     });
   });

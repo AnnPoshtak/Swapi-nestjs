@@ -122,7 +122,7 @@ describe('SpeciesService', () => {
       expect(result).toEqual({
         id: 5,
         filename: 'wookiee.jpg',
-        url: '/species/image/wookiee.jpg',
+        url: '/images/wookiee.jpg',
       });
     });
   });

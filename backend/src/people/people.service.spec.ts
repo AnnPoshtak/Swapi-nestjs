@@ -122,7 +122,7 @@ describe('PeopleService', () => {
       expect(result).toEqual({
         id: 5,
         filename: 'luke.jpg',
-        url: '/people/image/luke.jpg',
+        url: '/images/luke.jpg',
       });
     });
   });

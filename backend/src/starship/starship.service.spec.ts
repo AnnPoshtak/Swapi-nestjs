@@ -122,7 +122,7 @@ describe('StarshipService', () => {
       expect(result).toEqual({
         id: 5,
         filename: 'falcon.jpg',
-        url: '/starship/image/falcon.jpg',
+        url: '/images/falcon.jpg',
       });
     });
   });
