@@ -13,5 +13,4 @@ if [ ! -d "$DIRECTORY" ]; then
     exit 1
 fi
 
-# Сама очистка
 find "$DIRECTORY" -type f -mmin +3 -exec tar -czf "{}.tar.gz" "{}" \; -delete
