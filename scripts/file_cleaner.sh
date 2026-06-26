@@ -1,17 +1,17 @@
 #!/bin/bash
 
 DIRECTORY=$1
-FILE_CLEANER_PATH=$2
 
-if [ -z "$DIRECTORY" ] || [ -z "$FILE_CLEANER_PATH" ]; then
-    echo "Error: Missing arguments"
-    echo "Usage: $0 <directory_to_clean> <path_to_this_script>"
+if [ -z "$DIRECTORY" ]; then
+    echo "Error: Missing directory argument"
+    echo "Usage: $0 <directory_to_clean>"
     exit 1
 fi
 
-if ! crontab -l 2>/dev/null | grep -q "file_cleaner.sh"; then
-    (crontab -l 2>/dev/null; echo "* * * * * $FILE_CLEANER_PATH $DIRECTORY") | crontab -
-    echo "Script was successfully added to cron!"
+if [ ! -d "$DIRECTORY" ]; then
+    echo "Error: Directory $DIRECTORY does not exist."
+    exit 1
 fi
 
+# Сама очистка
 find "$DIRECTORY" -type f -mmin +3 -exec tar -czf "{}.tar.gz" "{}" \; -delete
